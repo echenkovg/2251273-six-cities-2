@@ -161,6 +161,11 @@ export const fetchUserStatus = createAsyncThunk<User, undefined, { extra: Extra 
   Action.FETCH_USER_STATUS,
   async (_, { extra }) => {
     const { api } = extra;
+
+    if (!Token.get()) {
+      return Promise.reject(new Error('No auth token'));
+    }
+
     try {
       const { data } = await api.get<User>(ApiRoute.Check);
       return data;

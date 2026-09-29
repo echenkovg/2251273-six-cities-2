@@ -47,7 +47,7 @@ const Property = (): JSX.Element | null => {
     return <Spinner />;
   }
 
-  if (!offer) {
+  if (!offer || !offer.user) {
     return null;
   }
 
