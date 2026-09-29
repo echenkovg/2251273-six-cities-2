@@ -9,6 +9,7 @@
   ],
   "main": "main.js",
   "scripts": {
+    "cli": "tsx src/main.cli.ts",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:reset": "docker-compose down -v && docker-compose up -d",

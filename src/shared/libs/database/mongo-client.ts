@@ -4,7 +4,10 @@ import { DatabaseClientInterface } from './index.js';
 import { LoggerInterface } from '../logger/logger.interface.js';
 import { RestConfig } from './../config/index.js';
 import { TYPES } from '../container/container.types.js';
-import { UserModel } from '../../modules/user/user.entity.js';
+
+import '../../modules/user/user.entity.js';
+import '../../modules/offer/offer.entity.js';
+import '../../modules/comment/comment.entity.js';
 
 @injectable()
 export class MongoClient implements DatabaseClientInterface {
@@ -54,9 +57,16 @@ export class MongoClient implements DatabaseClientInterface {
         await connection.db.admin().ping();
       }
 
-      await UserModel.init();
+      try {
+        await this.syncIndexes();
+      } catch (syncError) {
+        this.logger.error(
+          syncError as Error,
+          'MongoClient: Failed to sync indexes — continuing without them. ' +
+            'Удалите дубликаты и перезапустите приложение.',
+        );
+      }
 
-      this.logger.info('MongoClient: Indexes synchronized.');
       this.logger.info('MongoClient: Database connection established and verified!');
     } catch (error) {
       this.logger.error(error as Error, 'MongoClient: Failed to connect to MongoDB');
@@ -75,5 +85,22 @@ export class MongoClient implements DatabaseClientInterface {
       this.logger.error(error as Error, 'MongoClient: Failed to disconnect from MongoDB');
       throw error;
     }
+  }
+
+  public async syncIndexes(): Promise<void> {
+    const modelNames = mongoose.modelNames();
+
+    if (modelNames.length === 0) {
+      this.logger.warn('MongoClient: No models registered — nothing to sync.');
+      return;
+    }
+
+    for (const name of modelNames) {
+      const model = mongoose.model(name);
+      await model.syncIndexes();
+      this.logger.info(`MongoClient: Indexes synced for model "${name}"`);
+    }
+
+    this.logger.info('MongoClient: Indexes synchronized.');
   }
 }
