@@ -15,6 +15,12 @@ import {
 } from './../../const.js';
 import { TSVFormatter } from '../tsv-formatter/tsv-formatter.js';
 
+const COORD_JITTER = 0.02;
+
+function jitter(base: number, amplitude: number = COORD_JITTER): number {
+  return base + (Math.random() - 0.5) * amplitude;
+}
+
 export class TSVOfferGenerator implements OfferGenerator {
   private readonly formatter = new TSVFormatter();
 
@@ -38,7 +44,7 @@ export class TSVOfferGenerator implements OfferGenerator {
     const cityName = getRandomItem(cites);
     const previewImage = getRandomItem(previewImages);
 
-    const location = locations[cityName] ?? {
+    const cityLocation = locations[cityName] ?? {
       latitude: 0,
       longitude: 0,
       zoom: 0,
@@ -64,15 +70,15 @@ export class TSVOfferGenerator implements OfferGenerator {
       city: {
         name: cityName,
         location: {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          zoom: location.zoom,
+          latitude: cityLocation.latitude,
+          longitude: cityLocation.longitude,
+          zoom: cityLocation.zoom,
         },
       },
       location: {
-        latitude: location.latitude,
-        longitude: location.longitude,
-        zoom: location.zoom,
+        latitude: jitter(cityLocation.latitude),
+        longitude: jitter(cityLocation.longitude),
+        zoom: cityLocation.zoom,
       },
       isFavorite,
       isPremium,
